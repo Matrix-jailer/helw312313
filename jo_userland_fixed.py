@@ -185,8 +185,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
             ": ̗̀➛ Pro Hunter Capabilities 🎀\n"
             ": ̗̀➛ Our tool Find almost all Gateways\n"
-            ": ̗̀➛ This tool accurately finds Captcha & Cloudflare\n"
-            ": ̗̀➛ Pro Gateway use Premium proxies to bypass websites\n"
+            ": ̗̀➛ Accurately finds Captcha & Cloudflare\n"
+            ": ̗̀➛ We use Premium proxies to bypass\n"
             ": ̗̀➛ Hosted on Paid service."
         )
         await query.message.edit_text(message, reply_markup=reply_markup, parse_mode="HTML")
