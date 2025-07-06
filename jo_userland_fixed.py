@@ -13,7 +13,7 @@ from datetime import datetime
 import re
 
 # Bot configuration
-BOT_TOKEN = "7162917997:AAEWexwafYWfbrgV2XIDAhXu3cevJxlhJ5Y"  # Replace with your bot token
+BOT_TOKEN = "7162917997:AAF3FWcfLWg4_g_sHXOlDhXx-sH2_alw8og"  # Replace with your bot token
 ADMIN_ID = 7451622773  # Replace with your admin's Telegram user ID
 REGISTRATION_CHANNEL = "-1002237023678"  # Replace with registration channel ID
 RESULTS_CHANNEL = "-1002158129417"  # Replace with results channel ID
