@@ -127,7 +127,7 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ": ̗̀➛ You are already Registered my boy 🎻\n"
         "✎ Use Hunt button to check Website\n"
         "✎ Use Credit button to check Credits\n"
-        "✎ Use Info button to check bot Information\n"
+        "✎ Use Info button to check bot Info\n"
         "✎ Use Owner button to contact Owner"
     )
     if update.callback_query:
