@@ -283,7 +283,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         logger.error(f"Button callback error: {str(e)}")
-        await query.message.reply_text("An error occurred. Please try again.", parse_mode="HTML")
+        await update.effective_message.reply_text("An error occurred. Please try again.", parse_mode="HTML")
 
 # Hunt command handler
 async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
