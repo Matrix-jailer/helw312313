@@ -463,14 +463,6 @@ async def main():
         print(f"Failed to start the bot: {str(e)}. Please check the logs for details.")
 
 if __name__ == "__main__":
-    import sys
+    import asyncio
+    asyncio.run(main())
 
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            loop.create_task(main())  # schedule it in existing loop
-        else:
-            loop.run_until_complete(main())
-    except Exception as e:
-        logger.error(f"Startup error: {e}")
-        print(f"Failed to start the bot: {e}")
