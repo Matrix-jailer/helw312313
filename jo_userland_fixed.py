@@ -1,5 +1,6 @@
 import aiosqlite
 import requests
+import aiohttp  # Added missing import
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -208,7 +209,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
-                "✎ Use /hunt &lt;url&gt; to check Website\n"
+                "✎ Use /hunt -url- to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             try:
@@ -299,7 +300,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Are you retard? 🦢\n"
-                "✎ Use /hunt &lt;url&gt; to check Website\n"
+                "✎ Use /hunt -url- to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -342,7 +343,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
-                "✎ Use /hunt &lt;url&gt; to check Website\n"
+                "✎ Use /hunt -url- to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -356,7 +357,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
-                "✎ Use /hunt &lt;url&gt; to check Website\n"
+                "✎ Use /hunt -url- to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -423,7 +424,7 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
             "<b>ׂPro Gateway Hunter 3.0</b>\n"
             ": ̗̀➛ Are you retard? 🦢\n"
-            "✎ Use /hunt &lt;url&gt; to check Website\n"
+            "✎ Use /hunt -url- to check Website\n"
             "╰┈➤ ex: /hunt https://example.com"
         )
         await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -438,8 +439,8 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("An unexpected error occurred. Please try again later.", parse_mode="HTML")
 
 # Main function to run the bot
-# Main function to run the bot
 async def main():
+    loop = asyncio.get_event_loop()
     try:
         await init_db()
         application = Application.builder().token(BOT_TOKEN).build()
@@ -460,11 +461,25 @@ async def main():
 
     except Exception as e:
         logger.error(f"Main function error: {str(e)}")
-        print("Failed to start the bot. Please check the logs for details.")
+        print(f"Failed to start the bot: {str(e)}. Please check the logs for details.")
     finally:
         # Ensure proper shutdown
         if 'application' in locals():
-            await application.shutdown()
+            try:
+                await application.shutdown()
+            except Exception as e:
+                logger.error(f"Shutdown error: {str(e)}")
+        # Close the event loop if it's still running
+        if not loop.is_closed():
+            try:
+                loop.run_until_complete(loop.shutdown_asyncgens())
+                loop.close()
+            except Exception as e:
+                logger.error(f"Event loop close error: {str(e)}")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except RuntimeError as e:
+        logger.error(f"Asyncio run error: {str(e)}")
+        print(f"Failed to run bot: {str(e)}. Check Render configuration.")
