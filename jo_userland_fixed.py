@@ -306,7 +306,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message = (
                 "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Are you retard? 🦢\n"
-                "✎ Use /hunt <url> to check Website\n"
+                "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -346,7 +346,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message = (
                 "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
-                "✎ Use /hunt <url> to check Website\n"
+                "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -359,7 +359,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message = (
                 "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
-                "✎ Use /hunt <url> to check Website\n"
+                "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
