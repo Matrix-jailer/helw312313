@@ -104,7 +104,7 @@ def format_result(json_data, user_name, username, credits):
             f"🔒 <b>Captcha</b>: {json_data['Captcha'] + ' 🔥' if json_data['Captcha'] == 'Not Found' else json_data['Captcha']}\n"
             f"🏬 <b>Platform</b>: {json_data['Platform'] if json_data['Platform'] != 'None' else 'Custom Platform 🗺️'}\n"
             f"🔐 <b>3D Secure</b>: {json_data['3D Secure'] + ' 🔥' if json_data['3D Secure'] == 'Not Found' else json_data['3D Secure']}\n"
-            f"🆔 <b>Checked by</b>: <a href='tg://user?id={username}'>{user_name}</a>\n"
+            f"🆔 <b>Checked by</b>: <a href='tg://user?id={user_id}'>{user_name}</a>\n"
             f"💰 <b>Credits left</b>: {credits}"
         )
         return result
@@ -324,7 +324,8 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if db_user[3] <= 0:
                     await processing_msg.edit_text("Insufficient credits. Please contact the owner.", parse_mode="HTML")
                     return
-                await update_credits(user_id, db_user[3] - 1)
+                await update_credits(user_id, -1, add=True)
+
 
             result = format_result(json_data, user.first_name, user_id, "∞" if user_id == ADMIN_ID else db_user[3] - 1)
             try:
