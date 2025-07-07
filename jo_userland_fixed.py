@@ -464,8 +464,9 @@ if __name__ == "__main__":
     import asyncio
 
     try:
+        # If the event loop is already running, use create_task
         loop = asyncio.get_running_loop()
-    except RuntimeError:
-        asyncio.run(main())
-    else:
         loop.create_task(main())
+    except RuntimeError:
+        # If no event loop is running, safe to use asyncio.run
+        asyncio.run(main())
