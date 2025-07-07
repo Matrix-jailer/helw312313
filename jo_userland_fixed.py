@@ -188,20 +188,18 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("An error occurred while displaying the menu. Please try again.", parse_mode="HTML")
 
 # Callback query handler for buttons
+from telegram.error import BadRequest
+
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         query = update.callback_query
-        await query.answer()
-        user = query.from_user
-        user_id = user.id
-        db_user = get_user(user_id)
-
-        if not db_user and query.data != "register":
-            await query.message.reply_text(
-                "Please register first using /start",
-                parse_mode="HTML"
-            )
-            return
+        try:
+            await query.answer()
+        except BadRequest as e:
+            if "Query is too old" in str(e):
+                return  # ✅ Ignore silently
+            else:
+                raise
 
         if query.data == "register":
             username = f"@{user.username}" if user.username else "No username"
