@@ -306,7 +306,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message = (
                 "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Are you retard? 🦢\n"
-                "✎ Use /hunt &lt;url&gt; to check Website\n"
+                "✎ Use /hunt <url> to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -319,7 +319,8 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         processing_msg = await update.message.reply_text("🔭 Processing... 🔭")
 
         try:
-            response = requests.get(API_URL + url, timeout=10)
+            response = requests.get(API_URL + url)  # Removed timeout
+            logger.info(f"API response: {response.text}")  # Added logging
             response.raise_for_status()
             json_data = response.json()
 
@@ -345,12 +346,12 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message = (
                 "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
-                "✎ Use /hunt &lt;url&gt; to check Website\n"
+                "✎ Use /hunt <url> to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
 
-        except requests.RequestException as e:
+        except Exception as e:
             logger.error(f"API request error: {str(e)}")
             await processing_msg.edit_text("Error: Failed to process the URL. Please try again.", parse_mode="HTML")
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
@@ -358,16 +359,15 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message = (
                 "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
-                "✎ Use /hunt &lt;url&gt; to check Website\n"
+                "✎ Use /hunt <url> to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
 
     except Exception as e:
-        logger.error(f"Hunt command error: {str(e)}")
+        logger.error(f"Working on some Fault: {str(e)}")
         await update.message.reply_text("An error occurred. Please try again.", parse_mode="HTML")
 
-# Admin commands
 async def prohunt_add_credit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         if update.effective_user.id != ADMIN_ID:
