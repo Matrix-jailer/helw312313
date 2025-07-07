@@ -453,8 +453,7 @@ async def main():
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
         application.add_error_handler(error_handler)
 
-        # Explicitly initialize the application
-        await application.initialize()
+
         
         # Start polling
         await application.run_polling(allowed_updates=Update.ALL_TYPES)
@@ -462,24 +461,16 @@ async def main():
     except Exception as e:
         logger.error(f"Main function error: {str(e)}")
         print(f"Failed to start the bot: {str(e)}. Please check the logs for details.")
-    finally:
-        # Ensure proper shutdown
-        if 'application' in locals():
-            try:
-                await application.shutdown()
-            except Exception as e:
-                logger.error(f"Shutdown error: {str(e)}")
-        # Close the event loop if it's still running
-        if not loop.is_closed():
-            try:
-                loop.run_until_complete(loop.shutdown_asyncgens())
-                loop.close()
-            except Exception as e:
-                logger.error(f"Event loop close error: {str(e)}")
 
 if __name__ == "__main__":
+    import sys
+
     try:
-        asyncio.run(main())
-    except RuntimeError as e:
-        logger.error(f"Asyncio run error: {str(e)}")
-        print(f"Failed to run bot: {str(e)}. Check Render configuration.")
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            loop.create_task(main())  # schedule it in existing loop
+        else:
+            loop.run_until_complete(main())
+    except Exception as e:
+        logger.error(f"Startup error: {e}")
+        print(f"Failed to start the bot: {e}")
