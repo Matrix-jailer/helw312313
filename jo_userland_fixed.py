@@ -1,6 +1,5 @@
-import aiosqlite
-import requests
-import aiohttp  # Added missing import
+import sqlite3
+import aiohttp  # Replaced requests with aiohttp for async HTTP calls
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -23,75 +22,88 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Bot configuration
-BOT_TOKEN = "7162917997:AAGP0_I-kZMFLtFKIOfnojSnCAYmUVUt2MU"  # Replace with your actual bot token
+BOT_TOKEN = "7162917997:AAHPjReT3Sf11oHExC57pzCWacl6Xw2-bis"  # Replace with your actual bot token
 ADMIN_ID = 7451622773  # Replace with your admin's Telegram user ID
 REGISTRATION_CHANNEL = "-1002237023678"  # Replace with registration channel ID
 RESULTS_CHANNEL = "-1002158129417"  # Replace with results channel ID
 API_URL = "https://nine9ac-pn2s.onrender.com/gate/?url="
 
 # Initialize SQLite database
-async def init_db():
-    async with aiosqlite.connect("users.db") as conn:
-        try:
-            await conn.execute(
-                """CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY,
-                    username TEXT,
-                    join_date TEXT,
-                    credits INTEGER
-                )"""
-            )
-            await conn.commit()
-        except aiosqlite.Error as e:
-            logger.error(f"Database initialization error: {str(e)}")
+def init_db():
+    try:
+        conn = sqlite3.connect("users.db")
+        c = conn.cursor()
+        c.execute(
+            """CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY,
+                username TEXT,
+                join_date TEXT,
+                credits INTEGER
+            )"""
+        )
+        conn.commit()
+    except sqlite3.Error as e:
+        logger.error(f"Database initialization error: {str(e)}")
+    finally:
+        conn.close()
 
 # Get user data from database
-async def get_user(user_id):
-    async with aiosqlite.connect("users.db") as conn:
-        try:
-            conn.row_factory = aiosqlite.Row
-            cursor = await conn.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
-            user = await cursor.fetchone()
-            return user
-        except aiosqlite.Error as e:
-            logger.error(f"Database get_user error: {str(e)}")
-            return None
+def get_user(user_id):
+    try:
+        conn = sqlite3.connect("users.db")
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
+        user = c.fetchone()
+        return user
+    except sqlite3.Error as e:
+        logger.error(f"Database get_user error: {str(e)}")
+        return None
+    finally:
+        conn.close()
 
 # Register new user
-async def register_user(user_id, username, join_date):
-    async with aiosqlite.connect("users.db") as conn:
-        try:
-            await conn.execute(
-                "INSERT OR IGNORE INTO users (user_id, username, join_date, credits) VALUES (?, ?, ?, ?)",
-                (user_id, username, join_date, 10),
-            )
-            await conn.commit()
-        except aiosqlite.Error as e:
-            logger.error(f"Database register_user error: {str(e)}")
+def register_user(user_id, username, join_date):
+    try:
+        conn = sqlite3.connect("users.db")
+        c = conn.cursor()
+        c.execute(
+            "INSERT OR IGNORE INTO users (user_id, username, join_date, credits) VALUES (?, ?, ?, ?)",
+            (user_id, username, join_date, 10),
+        )
+        conn.commit()
+    except sqlite3.Error as e:
+        logger.error(f"Database register_user error: {str(e)}")
+    finally:
+        conn.close()
 
 # Update user credits
-async def update_credits(user_id, amount, add=False):
-    async with aiosqlite.connect("users.db") as conn:
-        try:
-            if add:
-                await conn.execute("UPDATE users SET credits = credits + ? WHERE user_id = ?", (amount, user_id))
-            else:
-                await conn.execute("UPDATE users SET credits = ? WHERE user_id = ?", (amount, user_id))
-            await conn.commit()
-        except aiosqlite.Error as e:
-            logger.error(f"Database update_credits error: {str(e)}")
+def update_credits(user_id, amount, add=False):
+    try:
+        conn = sqlite3.connect("users.db")
+        c = conn.cursor()
+        if add:
+            c.execute("UPDATE users SET credits = credits + ? WHERE user_id = ?", (amount, user_id))
+        else:
+            c.execute("UPDATE users SET credits = ? WHERE user_id = ?", (amount, user_id))
+        conn.commit()
+    except sqlite3.Error as e:
+        logger.error(f"Database update_credits error: {str(e)}")
+    finally:
+        conn.close()
 
 # Get all users (for admin)
-async def get_all_users():
-    async with aiosqlite.connect("users.db") as conn:
-        try:
-            conn.row_factory = aiosqlite.Row
-            cursor = await conn.execute("SELECT * FROM users")
-            users = await cursor.fetchall()
-            return users
-        except aiosqlite.Error as e:
-            logger.error(f"Database get_all_users error: {str(e)}")
-            return []
+def get_all_users():
+    try:
+        conn = sqlite3.connect("users.db")
+        c = conn.cursor()
+        c.execute("SELECT * FROM users")
+        users = c.fetchall()
+        return users
+    except sqlite3.Error as e:
+        logger.error(f"Database get_all_users error: {str(e)}")
+        return []
+    finally:
+        conn.close()
 
 # Format API result
 def format_result(json_data, user_name, username, credits):
@@ -104,7 +116,7 @@ def format_result(json_data, user_name, username, credits):
             f"🔒 <b>Captcha</b>: {json_data['Captcha'] + ' 🔥' if json_data['Captcha'] == 'Not Found' else json_data['Captcha']}\n"
             f"🏬 <b>Platform</b>: {json_data['Platform'] if json_data['Platform'] != 'None' else 'Custom Platform 🗺️'}\n"
             f"🔐 <b>3D Secure</b>: {json_data['3D Secure'] + ' 🔥' if json_data['3D Secure'] == 'Not Found' else json_data['3D Secure']}\n"
-            f"🆔 <b>Checked by</b>: <a href='tg://user?id={user_id}'>{user_name}</a>\n"
+            f"🆔 <b>Checked by</b>: <a href='tg://user?id={username}'>{user_name}</a>\n"
             f"💰 <b>Credits left</b>: {credits}"
         )
         return result
@@ -121,7 +133,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         join_date = datetime.now().strftime("%d/%m/%Y")
 
         # Check if user is registered
-        db_user = await get_user(user_id)
+        db_user = get_user(user_id)
         if not db_user:
             keyboard = [[InlineKeyboardButton("Register", callback_data="register")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
@@ -182,7 +194,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.answer()
         user = query.from_user
         user_id = user.id
-        db_user = await get_user(user_id)
+        db_user = get_user(user_id)
 
         if not db_user and query.data != "register":
             await query.message.reply_text(
@@ -194,7 +206,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if query.data == "register":
             username = f"@{user.username}" if user.username else "No username"
             join_date = datetime.now().strftime("%d/%m/%Y")
-            await register_user(user_id, username, join_date)
+            register_user(user_id, username, join_date)
             await context.bot.send_message(
                 chat_id=REGISTRATION_CHANNEL,
                 text=f"New User Registered:\nUser ID: {user_id}\nUsername: {username}\nJoin Date: {join_date}\nCredits: 10",
@@ -209,7 +221,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
-                "✎ Use /hunt -url- to check Website\n"
+                "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             try:
@@ -228,7 +240,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 f": ̗̀➛ Hello <a href='tg://user?id={user_id}'>{user.first_name}</a> 🛸\n"
-                f"✎ Credits - 💲 {credits}\n"
+                f"✎ Credits - 💰 {credits}\n"
                 f"╰┈➤ Joined - {db_user[2]}"
             )
             try:
@@ -280,7 +292,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         user = update.effective_user
         user_id = user.id
-        db_user = await get_user(user_id)
+        db_user = get_user(user_id)
 
         if not db_user:
             await update.message.reply_text(
@@ -300,7 +312,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Are you retard? 🦢\n"
-                "✎ Use /hunt -url- to check Website\n"
+                "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -313,19 +325,17 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         processing_msg = await update.message.reply_text("🔭 Processing... 🔭")
 
         try:
-            # Use aiohttp for async HTTP requests
             async with aiohttp.ClientSession() as session:
                 async with session.get(API_URL + url) as response:
-                    logger.info(f"API response: {response.status}")
-                    response.raise_for_status()
+                    logger.info(f"API response: {await response.text()}")  # Log the response
+                    response.raise_for_status()  # Raise exception for bad status codes
                     json_data = await response.json()
 
             if user_id != ADMIN_ID:
                 if db_user[3] <= 0:
                     await processing_msg.edit_text("Insufficient credits. Please contact the owner.", parse_mode="HTML")
                     return
-                await update_credits(user_id, -1, add=True)
-
+                update_credits(user_id, db_user[3] - 1)
 
             result = format_result(json_data, user.first_name, user_id, "∞" if user_id == ADMIN_ID else db_user[3] - 1)
             try:
@@ -344,7 +354,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
-                "✎ Use /hunt -url- to check Website\n"
+                "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -358,13 +368,13 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
-                "✎ Use /hunt -url- to check Website\n"
+                "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
 
     except Exception as e:
-        logger.error(f"Hunt command error: {str(e)}")
+        logger.error(f"Working on some Fault: {str(e)}")
         await update.message.reply_text("An error occurred. Please try again.", parse_mode="HTML")
 
 async def prohunt_add_credit(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -380,11 +390,11 @@ async def prohunt_add_credit(update: Update, context: ContextTypes.DEFAULT_TYPE)
         try:
             user_id = int(args[0])
             credits = int(args[1])
-            db_user = await get_user(user_id)
+            db_user = get_user(user_id)
             if not db_user:
                 await update.message.reply_text("User not found.")
                 return
-            await update_credits(user_id, credits, add=True)
+            update_credits(user_id, credits, add=True)
             await update.message.reply_text(f"Added {credits} credits to user {user_id}.")
         except ValueError:
             await update.message.reply_text("Invalid user ID or credits amount.")
@@ -397,7 +407,7 @@ async def prohunt_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if update.effective_user.id != ADMIN_ID:
             return
 
-        users = await get_all_users()
+        users = get_all_users()
         if not users:
             await update.message.reply_text("No registered users.")
             return
@@ -425,7 +435,7 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
             "<b>ׂPro Gateway Hunter 3.0</b>\n"
             ": ̗̀➛ Are you retard? 🦢\n"
-            "✎ Use /hunt -url- to check Website\n"
+            "✎ Use /hunt &lt;url&gt; to check Website\n"
             "╰┈➤ ex: /hunt https://example.com"
         )
         await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -440,9 +450,9 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("An unexpected error occurred. Please try again later.", parse_mode="HTML")
 
 # Main function to run the bot
-async def main():
+def main():
     try:
-        await init_db()
+        init_db()
         application = Application.builder().token(BOT_TOKEN).build()
 
         application.add_handler(CommandHandler("start", start))
@@ -453,17 +463,10 @@ async def main():
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
         application.add_error_handler(error_handler)
 
-        await application.run_polling()
-
+        application.run_polling(allowed_updates=Update.ALL_TYPES)
     except Exception as e:
         logger.error(f"Main function error: {str(e)}")
-        print(f"Failed to start the bot: {str(e)}. Please check the logs for details.")
-
+        print("Failed to start the bot. Please check the logs for details.")
 
 if __name__ == "__main__":
-    import asyncio
-    import nest_asyncio
-
-    nest_asyncio.apply()
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    main()
