@@ -289,6 +289,9 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Hunt command handler
 async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    asyncio.create_task(handle_hunt(update, context))
+
+async def handle_hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         user = update.effective_user
         user_id = user.id
@@ -327,8 +330,8 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(API_URL + url) as response:
-                    logger.info(f"API response: {await response.text()}")  # Log the response
-                    response.raise_for_status()  # Raise exception for bad status codes
+                    logger.info(f"API response: {await response.text()}")
+                    response.raise_for_status()
                     json_data = await response.json()
 
             if user_id != ADMIN_ID:
@@ -338,15 +341,19 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 update_credits(user_id, db_user[3] - 1)
 
             result = format_result(json_data, user.first_name, user_id, "∞" if user_id == ADMIN_ID else db_user[3] - 1)
+
             try:
                 await processing_msg.edit_text(result, parse_mode="HTML")
-            except telegram.error.BadRequest as e:
+            except Exception as e:
                 if "Message is not modified" in str(e):
                     pass
                 else:
-                    raise e
+                    raise
 
-            await context.bot.send_message(chat_id=RESULTS_CHANNEL, text=result, parse_mode="HTML")
+            try:
+                await context.bot.send_message(chat_id=RESULTS_CHANNEL, text=result, parse_mode="HTML")
+            except Exception as e:
+                logger.warning(f"Failed to send to results channel: {str(e)}")
 
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
@@ -376,6 +383,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Working on some Fault: {str(e)}")
         await update.message.reply_text("An error occurred. Please try again.", parse_mode="HTML")
+
 
 async def prohunt_add_credit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -456,7 +464,7 @@ def main():
         application = Application.builder().token(BOT_TOKEN).build()
 
         application.add_handler(CommandHandler("start", start))
-        application.add_handler(CommandHandler("hunt", hunt))
+        application.add_handler(CommandHandler("hunt", lambda update, context: asyncio.create_task(hunt(update, context))))
         application.add_handler(CommandHandler("prohuntaddcredit", prohunt_add_credit))
         application.add_handler(CommandHandler("prohuntusers", prohunt_users))
         application.add_handler(CallbackQueryHandler(button_callback))
