@@ -464,5 +464,15 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
+
+    try:
+        # Try to get the current running loop
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop, safe to run normally
+        asyncio.run(main())
+    else:
+        # Loop is already running (e.g. Render)
+        # Use `create_task` to schedule it
+        loop.create_task(main())
 
