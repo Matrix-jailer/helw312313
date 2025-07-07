@@ -337,7 +337,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(chat_id=RESULTS_CHANNEL, text=result, parse_mode="HTML")
 
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
- catalase            reply_markup = InlineKeyboardMarkup(keyboard)
+            reply_markup = InlineKeyboardMarkup(keyboard)
             message = (
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
