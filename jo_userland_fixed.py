@@ -440,7 +440,6 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Main function to run the bot
 async def main():
-    loop = asyncio.get_event_loop()
     try:
         await init_db()
         application = Application.builder().token(BOT_TOKEN).build()
@@ -453,26 +452,24 @@ async def main():
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
         application.add_error_handler(error_handler)
 
-
-        
-        # Start polling
-        await application.run_polling(allowed_updates=Update.ALL_TYPES)
+        await application.initialize()
+        await application.start()
+        await application.updater.start_polling()
+        await application.updater.wait_until_closed()
+        await application.stop()
+        await application.shutdown()
 
     except Exception as e:
         logger.error(f"Main function error: {str(e)}")
         print(f"Failed to start the bot: {str(e)}. Please check the logs for details.")
 
+
 if __name__ == "__main__":
     import asyncio
 
     try:
-        # Try to get the current running loop
         loop = asyncio.get_running_loop()
     except RuntimeError:
-        # No running loop, safe to run normally
         asyncio.run(main())
     else:
-        # Loop is already running (e.g. Render)
-        # Use `create_task` to schedule it
         loop.create_task(main())
-
