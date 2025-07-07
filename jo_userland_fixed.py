@@ -22,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Bot configuration
-BOT_TOKEN = "7162917997:AAFMVkY-VoipLjM8sxZgkwvbPSOVtZOHnKQ"  # Replace with your actual bot token
+BOT_TOKEN = "7162917997:AAENhe4aBQd3Nt_OUN3xodZczU9TvhOjqYI"  # Replace with your actual bot token
 ADMIN_ID = 7451622773  # Replace with your admin's Telegram user ID
 REGISTRATION_CHANNEL = "-1002237023678"  # Replace with registration channel ID
 RESULTS_CHANNEL = "-1002158129417"  # Replace with results channel ID
@@ -138,7 +138,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [[InlineKeyboardButton("Register", callback_data="register")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             message = (
-                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
+                "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 "✎ Register first to use bot features 🔗"
             )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
@@ -163,11 +164,12 @@ async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = (
-            "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
-            ": ̗̀➛ You are already Registered my boy 🎻\n"
-            "✎ Use Hunt button to check Website\n"
-            "✎ Use Credit button to check Credits\n"
-            "✎ Use Info button to check bot Info\n"
+            "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
+            "<b>ׂPro Gateway Hunter 3.0</b>\n"
+            ": ̗̀➛ You are already Registered ⭐\n"
+            "▬ Use Hunt button to check Website\n"
+            "☁ Use Credit button to check Credits\n"
+            "▶ Use Info button to check bot Info\n"
             "✎ Use Owner button to contact Owner"
         )
         if update.callback_query:
@@ -216,7 +218,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             message = (
-                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
+                "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
                 "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
@@ -234,9 +237,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             message = (
-                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
+                "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 f": ̗̀➛ Hello <a href='tg://user?id={user_id}'>{user.first_name}</a> 🛸\n"
-                f"✎ Credits - 💰 {credits}\n"
+                f"✎ Credits - 💲 {credits}\n"
                 f"╰┈➤ Joined - {db_user[2]}"
             )
             try:
@@ -251,7 +255,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             message = (
-                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
+                "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Pro Hunter Capabilities 🎀\n"
                 ": ̗̀➛ Our tool Find almost all Gateways\n"
                 ": ̗̀➛ Accurately finds Captcha & Cloudflare\n"
@@ -291,7 +296,7 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if not db_user:
             await update.message.reply_text(
-                "Please register first using /start",
+                "Register First You MF /start 🤬",
                 parse_mode="HTML"
             )
             return
@@ -304,7 +309,8 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             message = (
-                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
+                "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Are you retard? 🦢\n"
                 "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
@@ -344,7 +350,8 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             message = (
-                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
+                "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
                 "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
@@ -357,7 +364,8 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             message = (
-                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
+                "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 ": ̗̀➛ Let's start Hunting 💥\n"
                 "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
@@ -423,7 +431,8 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = (
-            "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+            "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
+            "<b>ׂPro Gateway Hunter 3.0</b>\n"
             ": ̗̀➛ Are you retard? 🦢\n"
             "✎ Use /hunt &lt;url&gt; to check Website\n"
             "╰┈➤ ex: /hunt https://example.com"
