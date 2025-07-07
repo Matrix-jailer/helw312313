@@ -12,17 +12,17 @@ from telegram.ext import (
 from datetime import datetime
 import re
 import logging
-import telegram.error
+import asyncio
 
 # Configure logging
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
 # Bot configuration
-BOT_TOKEN = "7162917997:AAHjCPWDpdhdGgOUz9Dy137Rv2IzldbG98s"  # Replace with your valid bot token
+BOT_TOKEN = "7162917997:AAHVUd9ECHDcv9deqBjOYEc0qhYoFJZqK9s"  # Replace with your actual bot token
 ADMIN_ID = 7451622773  # Replace with your admin's Telegram user ID
 REGISTRATION_CHANNEL = "-1002237023678"  # Replace with registration channel ID
 RESULTS_CHANNEL = "-1002158129417"  # Replace with results channel ID
@@ -43,7 +43,7 @@ def init_db():
         )
         conn.commit()
     except sqlite3.Error as e:
-        logger.error(f"Database initialization error: {e}")
+        logger.error(f"Database initialization error: {str(e)}")
     finally:
         conn.close()
 
@@ -56,7 +56,7 @@ def get_user(user_id):
         user = c.fetchone()
         return user
     except sqlite3.Error as e:
-        logger.error(f"Error fetching user {user_id}: {e}")
+        logger.error(f"Database get_user error: {str(e)}")
         return None
     finally:
         conn.close()
@@ -72,7 +72,7 @@ def register_user(user_id, username, join_date):
         )
         conn.commit()
     except sqlite3.Error as e:
-        logger.error(f"Error registering user {user_id}: {e}")
+        logger.error(f"Database register_user error: {str(e)}")
     finally:
         conn.close()
 
@@ -87,7 +87,7 @@ def update_credits(user_id, amount, add=False):
             c.execute("UPDATE users SET credits = ? WHERE user_id = ?", (amount, user_id))
         conn.commit()
     except sqlite3.Error as e:
-        logger.error(f"Error updating credits for user {user_id}: {e}")
+        logger.error(f"Database update_credits error: {str(e)}")
     finally:
         conn.close()
 
@@ -100,7 +100,7 @@ def get_all_users():
         users = c.fetchall()
         return users
     except sqlite3.Error as e:
-        logger.error(f"Error fetching all users: {e}")
+        logger.error(f"Database get_all_users error: {str(e)}")
         return []
     finally:
         conn.close()
@@ -120,88 +120,87 @@ def format_result(json_data, user_name, username, credits):
             f"💰 <b>Credits left</b>: {credits}"
         )
         return result
-    except (KeyError, re.error) as e:
-        logger.error(f"Error formatting result: {e}")
-        return "Error: Unable to process the API response."
+    except Exception as e:
+        logger.error(f"Format result error: {str(e)}")
+        return "Error formatting results. Please try again."
 
 # Start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    user_id = user.id
-    username = f"@{user.username}" if user.username else "No username"
-    join_date = datetime.now().strftime("%d/%m/%Y")
+    try:
+        user = update.effective_user
+        user_id = user.id
+        username = f"@{user.username}" if user.username else "No username"
+        join_date = datetime.now().strftime("%d/%m/%Y")
 
-    # Check if user is registered
-    db_user = get_user(user_id)
-    if not db_user:
-        keyboard = [[InlineKeyboardButton("Register", callback_data="register")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        message = (
-            "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
-            "✎ Register first to use bot features 🔗"
-        )
-        try:
+        # Check if user is registered
+        db_user = get_user(user_id)
+        if not db_user:
+            keyboard = [[InlineKeyboardButton("Register", callback_data="register")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            message = (
+                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                "✎ Register first to use bot features 🔗"
+            )
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
-        except telegram.error.BadRequest as e:
-            logger.error(f"Error sending start message: {e}")
-            await update.message.reply_text("Error: Unable to process your request. Please try again.")
-    else:
-        await show_main_menu(update, context)
+        else:
+            await show_main_menu(update, context)
+    except Exception as e:
+        logger.error(f"Start command error: {str(e)}")
+        await update.message.reply_text("An error occurred. Please try again later.", parse_mode="HTML")
 
 # Main menu after registration
 async def show_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [
-            InlineKeyboardButton("Hunt", callback_data="hunt"),
-            InlineKeyboardButton("Credit", callback_data="credit"),
-        ],
-        [
-            InlineKeyboardButton("Info", callback_data="info"),
-            InlineKeyboardButton("Owner", callback_data="owner"),
-        ],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    message = (
-        "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
-        ": ̗̀➛ You are already Registered my boy 🎻\n"
-        "✎ Use Hunt button to check Website\n"
-        "✎ Use Credit button to check Credits\n"
-        "✎ Use Info button to check bot Info\n"
-        "✎ Use Owner button to contact Owner"
-    )
     try:
+        keyboard = [
+            [
+                InlineKeyboardButton("Hunt", callback_data="hunt"),
+                InlineKeyboardButton("Credit", callback_data="credit"),
+            ],
+            [
+                InlineKeyboardButton("Info", callback_data="info"),
+                InlineKeyboardButton("Owner", callback_data="owner"),
+            ],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        message = (
+            "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+            ": ̗̀➛ You are already Registered my boy 🎻\n"
+            "✎ Use Hunt button to check Website\n"
+            "✎ Use Credit button to check Credits\n"
+            "✎ Use Info button to check bot Info\n"
+            "✎ Use Owner button to contact Owner"
+        )
         if update.callback_query:
-            # Check if message content is different to avoid "Message is not modified" error
-            current_text = update.callback_query.message.text
-            if current_text != message:
+            try:
                 await update.callback_query.message.edit_text(message, reply_markup=reply_markup, parse_mode="HTML")
+            except telegram.error.BadRequest as e:
+                if "Message is not modified" in str(e):
+                    pass  # Ignore if message content hasn't changed
+                else:
+                    raise e
         else:
             await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
-    except telegram.error.BadRequest as e:
-        if "Message is not modified" in str(e):
-            pass  # Ignore if the message is unchanged
-        else:
-            logger.error(f"Error showing main menu: {e}")
-            await (update.callback_query.message.edit_text("Error: Unable to update menu. Please try again.") if update.callback_query else update.message.reply_text("Error: Unable to show menu. Please try again."))
+    except Exception as e:
+        logger.error(f"Show main menu error: {str(e)}")
+        if update.message:
+            await update.message.reply_text("An error occurred while displaying the menu. Please try again.", parse_mode="HTML")
 
 # Callback query handler for buttons
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
     try:
+        query = update.callback_query
         await query.answer()
-    except telegram.error.BadRequest as e:
-        logger.error(f"Error answering callback query: {e}")
-        return
+        user = query.from_user
+        user_id = user.id
+        db_user = get_user(user_id)
 
-    user = query.from_user
-    user_id = user.id
-    db_user = get_user(user_id)
+        if not db_user and query.data != "register":
+            await query.message.reply_text(
+                "Please register first using /start",
+                parse_mode="HTML"
+            )
+            return
 
-    if not db_user and query.data != "register":
-        await query.message.reply_text("Please register first using /start.")
-        return
-
-    try:
         if query.data == "register":
             username = f"@{user.username}" if user.username else "No username"
             join_date = datetime.now().strftime("%d/%m/%Y")
@@ -222,9 +221,13 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "✎ Use /hunt &lt;url&gt; to check Website\n"
                 "╰┈➤ ex: /hunt https://example.com"
             )
-            current_text = query.message.text
-            if current_text != message:
+            try:
                 await query.message.edit_text(message, reply_markup=reply_markup, parse_mode="HTML")
+            except telegram.error.BadRequest as e:
+                if "Message is not modified" in str(e):
+                    pass
+                else:
+                    raise e
 
         elif query.data == "credit":
             credits = "∞" if user_id == ADMIN_ID else db_user[3]
@@ -236,9 +239,13 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"✎ Credits - 💰 {credits}\n"
                 f"╰┈➤ Joined - {db_user[2]}"
             )
-            current_text = query.message.text
-            if current_text != message:
+            try:
                 await query.message.edit_text(message, reply_markup=reply_markup, parse_mode="HTML")
+            except telegram.error.BadRequest as e:
+                if "Message is not modified" in str(e):
+                    pass
+                else:
+                    raise e
 
         elif query.data == "info":
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
@@ -251,9 +258,13 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 ": ̗̀➛ We use Premium proxies to bypass\n"
                 ": ̗̀➛ Hosted on Paid service."
             )
-            current_text = query.message.text
-            if current_text != message:
+            try:
                 await query.message.edit_text(message, reply_markup=reply_markup, parse_mode="HTML")
+            except telegram.error.BadRequest as e:
+                if "Message is not modified" in str(e):
+                    pass
+                else:
+                    raise e
 
         elif query.data == "owner":
             await context.bot.send_message(
@@ -267,28 +278,148 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data["state"] = None
             await show_main_menu(update, context)
 
-    except telegram.error.BadRequest as e:
-        if "Message is not modified" in str(e):
-            pass
-        else:
-            logger.error(f"Error in button callback: {e}")
-            await query.message.reply_text("Error: Unable to process your request. Please try again.")
+    except Exception as e:
+        logger.error(f"Button callback error: {str(e)}")
+        await query.message.reply_text("An error occurred. Please try again.", parse_mode="HTML")
 
 # Hunt command handler
 async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    user_id = user.id
-    db_user = get_user(user_id)
+    try:
+        user = update.effective_user
+        user_id = user.id
+        db_user = get_user(user_id)
 
-    if not db_user:
-        await update.message.reply_text("Please register first using /start.")
-        return
+        if not db_user:
+            await update.message.reply_text(
+                "Please register first using /start",
+                parse_mode="HTML"
+            )
+            return
 
-    if context.user_data.get("state") != "hunt":
-        return
+        if context.user_data.get("state") != "hunt":
+            return
 
-    args = context.args
-    if not args or len(args) != 1:
+        args = context.args
+        if not args or len(args) != 1:
+            keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            message = (
+                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                ": ̗̀➛ Are you retard? 🦢\n"
+                "✎ Use /hunt &lt;url&gt; to check Website\n"
+                "╰┈➤ ex: /hunt https://example.com"
+            )
+            await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
+            return
+
+        url = args[0]
+        if not url.startswith(("http://", "https://")):
+            url = "https://" + url
+
+        processing_msg = await update.message.reply_text("🔭 Processing... 🔭")
+
+        try:
+            response = requests.get(API_URL + url, timeout=10)
+            response.raise_for_status()
+            json_data = response.json()
+
+            if user_id != ADMIN_ID:
+                if db_user[3] <= 0:
+                    await processing_msg.edit_text("Insufficient credits. Please contact the owner.", parse_mode="HTML")
+                    return
+                update_credits(user_id, db_user[3] - 1)
+
+            result = format_result(json_data, user.first_name, user_id, "∞" if user_id == ADMIN_ID else db_user[3] - 1)
+            try:
+                await processing_msg.edit_text(result, parse_mode="HTML")
+            except telegram.error.BadRequest as e:
+                if "Message is not modified" in str(e):
+                    pass
+                else:
+                    raise e
+
+            await context.bot.send_message(chat_id=RESULTS_CHANNEL, text=result, parse_mode="HTML")
+
+            keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            message = (
+                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                ": ̗̀➛ Let's start Hunting 💥\n"
+                "✎ Use /hunt &lt;url&gt; to check Website\n"
+                "╰┈➤ ex: /hunt https://example.com"
+            )
+            await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
+
+        except requests.RequestException as e:
+            logger.error(f"API request error: {str(e)}")
+            await processing_msg.edit_text("Error: Failed to process the URL. Please try again.", parse_mode="HTML")
+            keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            message = (
+                "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
+                ": ̗̀➛ Let's start Hunting 💥\n"
+                "✎ Use /hunt &lt;url&gt; to check Website\n"
+                "╰┈➤ ex: /hunt https://example.com"
+            )
+            await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
+
+    except Exception as e:
+        logger.error(f"Hunt command error: {str(e)}")
+        await update.message.reply_text("An error occurred. Please try again.", parse_mode="HTML")
+
+# Admin commands
+async def prohunt_add_credit(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        if update.effective_user.id != ADMIN_ID:
+            return
+
+        args = context.args
+        if len(args) != 2:
+            await update.message.reply_text("Usage: /prohuntaddcredit <user_id> <credits>")
+            return
+
+        try:
+            user_id = int(args[0])
+            credits = int(args[1])
+            db_user = get_user(user_id)
+            if not db_user:
+                await update.message.reply_text("User not found.")
+                return
+            update_credits(user_id, credits, add=True)
+            await update.message.reply_text(f"Added {credits} credits to user {user_id}.")
+        except ValueError:
+            await update.message.reply_text("Invalid user ID or credits amount.")
+    except Exception as e:
+        logger.error(f"Add credit command error: {str(e)}")
+        await update.message.reply_text("An error occurred while adding credits.", parse_mode="HTML")
+
+async def prohunt_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        if update.effective_user.id != ADMIN_ID:
+            return
+
+        users = get_all_users()
+        if not users:
+            await update.message.reply_text("No registered users.")
+            return
+
+        message = ""
+        for i, user in enumerate(users, 1):
+            message += (
+                f"User - {i}\n"
+                f"Username - {user[1]}\n"
+                f"ChatID - {user[0]}\n"
+                f"Date Joined - {user[2]}\n"
+                f"Credits available - {'∞' if user[0] == ADMIN_ID else user[3]}\n\n"
+            )
+        await update.message.reply_text(message)
+    except Exception as e:
+        logger.error(f"Users command error: {str(e)}")
+        await update.message.reply_text("An error occurred while listing users.", parse_mode="HTML")
+
+# Handle unknown commands or messages
+async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
         keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         message = (
@@ -298,155 +429,34 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "╰┈➤ ex: /hunt https://example.com"
         )
         await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
-        return
-
-    url = args[0]
-    if not url.startswith(("http://", "https://")):
-        url = "https://" + url
-
-    try:
-        processing_msg = await update.message.reply_text("🔭 Processing... 🔭")
-
-        response = requests.get(API_URL + url, timeout=10)
-        response.raise_for_status()
-        json_data = response.json()
-
-        if user_id != ADMIN_ID:
-            if db_user[3] <= 0:
-                await processing_msg.edit_text("Error: Insufficient credits.")
-                return
-            update_credits(user_id, db_user[3] - 1)
-
-        result = format_result(json_data, user.first_name, user_id, "∞" if user_id == ADMIN_ID else db_user[3] - 1)
-        await processing_msg.edit_text(result, parse_mode="HTML")
-
-        await context.bot.send_message(chat_id=RESULTS_CHANNEL, text=result, parse_mode="HTML")
-
-        keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        message = (
-            "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
-            ": ̗̀➛ Let's start Hunting 💥\n"
-            "✎ Use /hunt &lt;url&gt; to check Website\n"
-            "╰┈➤ ex: /hunt https://example.com"
-        )
-        await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
-
-    except requests.RequestException as e:
-        logger.error(f"API request error for URL {url}: {e}")
-        await processing_msg.edit_text("Error: Unable to fetch website data. Please check the URL and try again.")
-    except telegram.error.BadRequest as e:
-        logger.error(f"Telegram API error: {e}")
-        await processing_msg.edit_text("Error: Unable to process your request. Please try again.")
     except Exception as e:
-        logger.error(f"Unexpected error in hunt: {e}")
-        await processing_msg.edit_text("Error: An unexpected issue occurred. Please try again later.")
+        logger.error(f"Unknown command error: {str(e)}")
+        await update.message.reply_text("An error occurred. Please use /start to begin.", parse_mode="HTML")
 
-# Admin commands
-async def prohunt_add_credit(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID:
-        await update.message.reply_text("Error: Unauthorized access.")
-        return
-
-    args = context.args
-    if len(args) != 2:
-        await update.message.reply_text("Usage: /prohuntaddcredit <user_id> <credits>")
-        return
-
-    try:
-        user_id = int(args[0])
-        credits = int(args[1])
-        db_user = get_user(user_id)
-        if not db_user:
-            await update.message.reply_text("User not found.")
-            return
-        update_credits(user_id, credits, add=True)
-        await update.message.reply_text(f"Added {credits} credits to user {user_id}.")
-    except ValueError:
-        await update.message.reply_text("Invalid user ID or credits amount.")
-    except Exception as e:
-        logger.error(f"Error in prohunt_add_credit: {e}")
-        await update.message.reply_text("Error: Unable to add credits. Please try again.")
-
-async def prohunt_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID:
-        await update.message.reply_text("Error: Unauthorized access.")
-        return
-
-    users = get_all_users()
-    if not users:
-        await update.message.reply_text("No registered users.")
-        return
-
-    message = ""
-    for i, user in enumerate(users, 1):
-        message += (
-            f"User - {i}\n"
-            f"Username - {user[1]}\n"
-            f"ChatID - {user[0]}\n"
-            f"Date Joined - {user[2]}\n"
-            f"Credits available - {'∞' if user[0] == ADMIN_ID else user[3]}\n\n"
-        )
-    try:
-        await update.message.reply_text(message)
-    except telegram.error.BadRequest as e:
-        logger.error(f"Error sending user list: {e}")
-        await update.message.reply_text("Error: Unable to display user list. Please try again.")
-
-# Handle unknown commands or messages
-async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    message = (
-        "<b>ׂ╰┈➤ Welcome to the Pro Gateway Hunter 3.0</b>\n"
-        ": ̗̀➛ Are you retard? 🦢\n"
-        "✎ Use /hunt &lt;url&gt; to check Website\n"
-        "╰┈➤ ex: /hunt https://example.com"
-    )
-    try:
-        await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
-    except telegram.error.BadRequest as e:
-        logger.error(f"Error handling unknown command: {e}")
-        await update.message.reply_text("Error: Invalid command. Please use /start to begin.")
-
-# Validate bot token
-def validate_token(token):
-    try:
-        import re
-        if not re.match(r"^\d+:[\w-]+$", token):
-            return False
-        return True
-    except Exception:
-        return False
+# Error handler
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.error(f"Update {update} caused error {context.error}")
+    if update and update.message:
+        await update.message.reply_text("An unexpected error occurred. Please try again later.", parse_mode="HTML")
 
 # Main function to run the bot
 def main():
-    init_db()
-    
-    if not validate_token(BOT_TOKEN) or BOT_TOKEN == "YOUR_BOT_TOKEN_HERE":
-        logger.error("Invalid or missing bot token.")
-        print("Error: Please provide a valid Telegram bot token.")
-        return
-
     try:
+        init_db()
         application = Application.builder().token(BOT_TOKEN).build()
-    except telegram.error.InvalidToken as e:
-        logger.error(f"Invalid bot token: {e}")
-        print("Error: The provided bot token is invalid. Please check and try again.")
-        return
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("hunt", hunt))
-    application.add_handler(CommandHandler("prohuntaddcredit", prohunt_add_credit))
-    application.add_handler(CommandHandler("prohuntusers", prohunt_users))
-    application.add_handler(CallbackQueryHandler(button_callback))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
+        application.add_handler(CommandHandler("start", start))
+        application.add_handler(CommandHandler("hunt", hunt))
+        application.add_handler(CommandHandler("prohuntaddcredit", prohunt_add_credit))
+        application.add_handler(CommandHandler("prohuntusers", prohunt_users))
+        application.add_handler(CallbackQueryHandler(button_callback))
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
+        application.add_error_handler(error_handler)
 
-    try:
-        application.run_polling()
+        application.run_polling(allowed_updates=Update.ALL_TYPES)
     except Exception as e:
-        logger.error(f"Error running bot: {e}")
-        print("Error: Failed to start the bot. Please check logs for details.")
+        logger.error(f"Main function error: {str(e)}")
+        print("Failed to start the bot. Please check the logs for details.")
 
 if __name__ == "__main__":
     main()
