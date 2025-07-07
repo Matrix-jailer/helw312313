@@ -22,11 +22,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Bot configuration
-BOT_TOKEN = "7162917997:AAF2Mnfmb3WFvUcclhnxPSaQ9N9CMzVBrlA"  # Replace with your actual bot token
+BOT_TOKEN = "7162917997:AAFMVkY-VoipLjM8sxZgkwvbPSOVtZOHnKQ"  # Replace with your actual bot token
 ADMIN_ID = 7451622773  # Replace with your admin's Telegram user ID
 REGISTRATION_CHANNEL = "-1002237023678"  # Replace with registration channel ID
 RESULTS_CHANNEL = "-1002158129417"  # Replace with results channel ID
-API_URL = "https://nine9ac.onrender.com/gate/?url="
+API_URL = "https://nine9ac-pn2s.onrender.com/gate/?url="
 
 # Initialize SQLite database
 def init_db():
