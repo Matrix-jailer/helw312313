@@ -453,12 +453,7 @@ async def main():
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
         application.add_error_handler(error_handler)
 
-        await application.initialize()
-        await application.start()
-        await application.updater.start_polling()
-        await application.updater.wait_until_closed()
-        await application.stop()
-        await application.shutdown()
+        await application.run_polling()
 
     except Exception as e:
         logger.error(f"Main function error: {str(e)}")
