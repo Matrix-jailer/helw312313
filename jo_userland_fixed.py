@@ -197,9 +197,20 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer()
         except BadRequest as e:
             if "Query is too old" in str(e):
-                return  # ✅ Ignore silently
+                return  # ✅ Ignore silently if expired
             else:
                 raise
+
+        user = query.from_user
+        user_id = user.id
+        db_user = get_user(user_id)
+
+        if not db_user and query.data != "register":
+            await query.message.reply_text(
+                "Please register first using /start",
+                parse_mode="HTML"
+            )
+            return
 
         if query.data == "register":
             username = f"@{user.username}" if user.username else "No username"
@@ -224,11 +235,11 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             try:
                 await query.message.edit_text(message, reply_markup=reply_markup, parse_mode="HTML")
-            except telegram.error.BadRequest as e:
+            except BadRequest as e:
                 if "Message is not modified" in str(e):
                     pass
                 else:
-                    raise e
+                    raise
 
         elif query.data == "credit":
             credits = "∞" if user_id == ADMIN_ID else db_user[3]
@@ -243,11 +254,11 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             try:
                 await query.message.edit_text(message, reply_markup=reply_markup, parse_mode="HTML")
-            except telegram.error.BadRequest as e:
+            except BadRequest as e:
                 if "Message is not modified" in str(e):
                     pass
                 else:
-                    raise e
+                    raise
 
         elif query.data == "info":
             keyboard = [[InlineKeyboardButton("Back", callback_data="back")]]
@@ -263,11 +274,11 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             try:
                 await query.message.edit_text(message, reply_markup=reply_markup, parse_mode="HTML")
-            except telegram.error.BadRequest as e:
+            except BadRequest as e:
                 if "Message is not modified" in str(e):
                     pass
                 else:
-                    raise e
+                    raise
 
         elif query.data == "owner":
             await context.bot.send_message(
@@ -283,7 +294,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         logger.error(f"Button callback error: {str(e)}")
-        await update.effective_message.reply_text("An error occurred. Please try again.", parse_mode="HTML")
+        await query.message.reply_text("An error occurred. Please try again.", parse_mode="HTML")
 
 # Hunt command handler
 async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
