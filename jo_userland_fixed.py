@@ -1,86 +1,4 @@
 import aiosqlite  # Replaced sqlite3 with aiosqlite
-import aiohttp  # Already updated for async API calls
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    CallbackQueryHandler,
-    MessageHandler,
-    filters,
-    ContextTypes,
-)
-from datetime import datetime
-import re
-import logging
-import asyncio
-
-# Configure logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
-
-# Bot configuration
-BOT_TOKEN = "7162917997:AAGP0_I-kZMFLtFKIOfnojSnCAYmUVUt2MU"  # Replace with your actual bot token
-ADMIN_ID = 7451622773  # Replace with your admin's Telegram user ID
-REGISTRATION_CHANNEL = "-1002237023678"  # Replace with registration channel ID
-RESULTS_CHANNEL = "-1002158129417"  # Replace with results channel ID
-API_URL = "https://nine9ac-pn2s.onrender.com/gate/?url="
-
-# Initialize SQLite database
-async def init_db():
-    try:
-        async with aiosqlite.connect("users.db") as conn:
-            c = await conn.cursor()
-            await c.execute(
-                """CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY,
-                    username TEXT,
-                    join_date TEXT,
-                    credits INTEGER
-                )"""
-            )
-            await conn.commit()
-    except aiosqlite.Error as e:
-        logger.error(f"Database initialization error: {str(e)}")
-
-# Get user data from database
-async def get_user(user_id):
-    try:
-        async with aiosqlite.connect("users.db") as conn:
-            c = await conn.cursor()
-            await c.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
-            user = await c.fetchone()
-            return user
-    except aiosqlite.Error as e:
-        logger.error(f"Database get_user error vanskelig
-System: I’m sorry for the mix-up, and I totally get why you’re upset—I promised to keep your script untouched except for the concurrency fix, and I’ll make sure we get this right without messing with your messages or logic. 😔 The issue with users experiencing delays and stuck buttons (as seen in your test with three Telegram accounts and the “Query is too old” error in the logs) is due to **synchronous SQLite operations** blocking the event loop, even with the `aiohttp` change. The `python-telegram-bot` library processes updates sequentially when blocked, causing delays for multiple users.
-
-Your script has **no explicit restrictions** or blockages, but the synchronous `sqlite3` calls (`get_user`, `update_credits`) in the `hunt` function are the root cause. These block the async event loop, preventing concurrent handling of `/hunt` commands and button clicks. The logs confirm this, as button callbacks time out (`Query is too old`) when the bot is busy with one user’s request.
-
-### What I Missed
-I assumed the `aiohttp` change alone would resolve the issue, but I underestimated the impact of synchronous database operations under load (50+ users). I also didn’t realize you were concerned about specific message content being altered—my apologies if any message formatting (e.g., emojis, HTML, or exact wording) was changed in my previous response. I’ll ensure **all messages match your original script exactly**.
-
-### Fix Overview
-To resolve the concurrency issue while preserving **every single message and logic** from your original script:
-1. **Replace `sqlite3` with `aiosqlite`** for async database operations to prevent blocking.
-2. Update database functions (`init_db`, `get_user`, `register_user`, `update_credits`, `get_all_users`) to use `aiosqlite` with async/await.
-3. Keep `aiohttp` for async API calls (already correct in your script).
-4. Increase `connection_pool_size` in `Application.builder()` to handle 50+ users.
-5. **Preserve all messages, buttons, and logic** exactly as in your `jouzer.txt`.
-
-### Revised Code
-Below is your **original script** with **minimal changes** to fix the concurrency issue. I’ve:
-- Replaced `sqlite3` with `aiosqlite`.
-- Updated database functions to be async.
-- Adjusted the `hunt` function to await async database calls.
-- Set `connection_pool_size=50` in `main()`.
-- Kept **all message content, button logic, and functionality** identical to your original script.
-- Ensured **no timeouts** are added to API calls, as you noted some sites take longer to respond.
-
-```python
-import aiosqlite  # Replaced sqlite3 with aiosqlite
 import aiohttp  # Already using for async API calls
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -104,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Bot configuration
-BOT_TOKEN = "7162917997:AAENhe4aBQd3Nt_OUN3xodZczU9TvhOjqYI"  # Replace with your actual bot token
+BOT_TOKEN = "7162917997:AAGP0_I-kZMFLtFKIOfnojSnCAYmUVUt2MU"  # Replace with your actual bot token
 ADMIN_ID = 7451622773  # Replace with your admin's Telegram user ID
 REGISTRATION_CHANNEL = "-1002237023678"  # Replace with registration channel ID
 RESULTS_CHANNEL = "-1002158129417"  # Replace with results channel ID
