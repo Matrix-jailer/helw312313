@@ -1,5 +1,5 @@
 import sqlite3
-import requests
+import aiohttp  # Replaced requests with aiohttp for async HTTP calls
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -22,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Bot configuration
-BOT_TOKEN = "7162917997:AAENhe4aBQd3Nt_OUN3xodZczU9TvhOjqYI"  # Replace with your actual bot token
+BOT_TOKEN = "7162917997:AAHPjReT3Sf11oHExC57pzCWacl6Xw2-bis"  # Replace with your actual bot token
 ADMIN_ID = 7451622773  # Replace with your admin's Telegram user ID
 REGISTRATION_CHANNEL = "-1002237023678"  # Replace with registration channel ID
 RESULTS_CHANNEL = "-1002158129417"  # Replace with results channel ID
@@ -240,7 +240,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 f": ̗̀➛ Hello <a href='tg://user?id={user_id}'>{user.first_name}</a> 🛸\n"
-                f"✎ Credits - 💲 {credits}\n"
+                f"✎ Credits - 💰 {credits}\n"
                 f"╰┈➤ Joined - {db_user[2]}"
             )
             try:
@@ -325,10 +325,11 @@ async def hunt(update: Update, context: ContextTypes.DEFAULT_TYPE):
         processing_msg = await update.message.reply_text("🔭 Processing... 🔭")
 
         try:
-            response = requests.get(API_URL + url)  # Removed timeout
-            logger.info(f"API response: {response.text}")  # Added logging
-            response.raise_for_status()
-            json_data = response.json()
+            async with aiohttp.ClientSession() as session:
+                async with session.get(API_URL + url) as response:
+                    logger.info(f"API response: {await response.text()}")  # Log the response
+                    response.raise_for_status()  # Raise exception for bad status codes
+                    json_data = await response.json()
 
             if user_id != ADMIN_ID:
                 if db_user[3] <= 0:
