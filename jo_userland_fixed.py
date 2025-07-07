@@ -1,5 +1,5 @@
 import aiosqlite  # Replaced sqlite3 with aiosqlite
-import aiohttp  # Already using for async API calls
+import aiohttp
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -230,7 +230,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "<b>ׂ╰┈➤ Welcome to ⬋</b>\n"
                 "<b>ׂPro Gateway Hunter 3.0</b>\n"
                 f": ̗̀➛ Hello <a href='tg://user?id={user_id}'>{user.first_name}</a> 🛸\n"
-                f"✎ Credits - 💲 {credits}\n"
+                f"✎ Credits - 💰 {credits}\n"
                 f"╰┈➤ Joined - {db_user[2]}"
             )
             try:
@@ -440,10 +440,10 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("An unexpected error occurred. Please try again later.", parse_mode="HTML")
 
 # Main function to run the bot
-def main():
+async def start_bot():
     try:
-        asyncio.run(init_db())  # Initialize DB asynchronously
-        application = Application.builder().token(BOT_TOKEN).connection_pool_size(50).build()  # Increased for 50+ users
+        await init_db()  # Initialize DB asynchronously
+        application = Application.builder().token(BOT_TOKEN).connection_pool_size(50).build()
 
         application.add_handler(CommandHandler("start", start))
         application.add_handler(CommandHandler("hunt", hunt))
@@ -453,10 +453,13 @@ def main():
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
         application.add_error_handler(error_handler)
 
-        application.run_polling(allowed_updates=Update.ALL_TYPES)
+        await application.run_polling(allowed_updates=Update.ALL_TYPES)
     except Exception as e:
         logger.error(f"Main function error: {str(e)}")
         print("Failed to start the bot. Please check the logs for details.")
+
+def main():
+    asyncio.run(start_bot())
 
 if __name__ == "__main__":
     main()
