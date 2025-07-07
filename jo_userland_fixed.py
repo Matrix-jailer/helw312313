@@ -110,7 +110,7 @@ def format_result(json_data, user_name, username, credits):
     try:
         domain = re.match(r"https?://[^/]+", json_data["URL"]).group(0)
         result = (
-            f"🟢 <b>URL</b>: {domain}\n"
+            f"🟢 <b>Site</b>: {domain}\n"
             f"💳 <b>Gateway</b>: {json_data['Gateway'] if json_data['Gateway'] != 'None' else 'Retard site 🤢'}\n"
             f"☁️ <b>Cloudflare</b>: {json_data['Cloudflare'] + ' 🔥' if json_data['Cloudflare'] == 'Not Found' else json_data['Cloudflare']}\n"
             f"🔒 <b>Captcha</b>: {json_data['Captcha'] + ' 🔥' if json_data['Captcha'] == 'Not Found' else json_data['Captcha']}\n"
