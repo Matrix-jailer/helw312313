@@ -462,11 +462,10 @@ async def main():
 
 if __name__ == "__main__":
     import asyncio
-
     try:
-        # If the event loop is already running, use create_task
-        loop = asyncio.get_running_loop()
-        loop.create_task(main())
-    except RuntimeError:
-        # If no event loop is running, safe to use asyncio.run
         asyncio.run(main())
+    except RuntimeError:
+        import nest_asyncio
+        nest_asyncio.apply()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(main())
