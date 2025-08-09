@@ -26,7 +26,7 @@ BOT_TOKEN = "7162917997:AAEBg8OJDRd58QPl32FHj7Hqc7lVQhu92R4"  # Replace with you
 ADMIN_ID = 7451622773  # Replace with your admin's Telegram user ID
 REGISTRATION_CHANNEL = "-1002237023678"  # Replace with registration channel ID
 RESULTS_CHANNEL = "-1002158129417"  # Replace with results channel ID
-API_URL = "https://nine9ac-pn2s.onrender.com/gate/?url="
+API_URL = "https://helw312313-fvn7.onrender.com/gate/?url="
 
 # Initialize SQLite database
 def init_db():
